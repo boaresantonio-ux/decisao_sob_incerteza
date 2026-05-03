@@ -68,15 +68,6 @@ if st.button("Gerar Análise Completa"):
     
     df_res = pd.DataFrame(resultados)
 
-
-# --- Sensibilidade de Hurwicz ---
-alphas = np.linspace(0, 1, 50)
-hurwicz_sens = pd.DataFrame(index=edited_df.index)
-
-for a in alphas:
-    hurwicz_sens[a] = (a * edited_df.max(axis=1)) + ((1 - a) * edited_df.min(axis=1))
-
-
     st.subheader("RESULTADO DA MATRIZ DE DECISÃO")
     st.dataframe(df_res.style.highlight_max(axis=0, subset=df_res.columns[:-1]).highlight_min(axis=0, subset=['Savage (Arrependimento)']))
 
@@ -113,29 +104,6 @@ for a in alphas:
     #     fig_sav = go.Figure(go.Bar(x=df_res.index, y=df_res['Savage (Arrependimento)'], marker_color='red'))
     #     fig_sav.update_layout(margin=dict(l=20, r=20, t=30, b=20))
     #     st.plotly_chart(fig_sav, use_container_width=True)
-
-with col2:
-    st.subheader("Sensibilidade do Critério de Hurwicz (α)")
-
-    fig_sens = go.Figure()
-
-    for acao in hurwicz_sens.index:
-        fig_sens.add_trace(go.Scatter(
-            x=alphas,
-            y=hurwicz_sens.loc[acao],
-            mode='lines',
-            name=acao
-        ))
-
-    fig_sens.update_layout(
-        xaxis_title="Coeficiente de Otimismo (α)",
-        yaxis_title="Valor de Hurwicz",
-        margin=dict(l=20, r=20, t=30, b=20),
-        legend=dict(orientation="h", y=1.02, x=0.5, xanchor="center")
-    )
-
-    st.plotly_chart(fig_sens, use_container_width=True)
-
 
 # --- Função de PDF Corrigida ---
     def gerar_pdf_completo(res, fig):
