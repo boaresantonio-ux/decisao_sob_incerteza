@@ -25,7 +25,7 @@ if metodo_entrada == "Upload de Arquivo (CSV/Excel)":
             df_input = pd.read_excel(uploaded_file, index_col=0)
         
         st.write("Visualização dos dados carregados:")
-        edited_df = st.data_editor(df_input, width="stretch")
+        edited_df = st.data_editor(df_input, width="stritch")
     else:
         st.info("Aguardando arquivo... Certifique-se de que a primeira coluna contenha os nomes das Ações.")
         st.stop()
@@ -109,17 +109,16 @@ if st.session_state.analise_feita:
     st.subheader("Perfil Decisório (Gráfico de Radar)")
     # Definindo os critérios para os eixos do radar
     categorias = ['Maximax (Otimista)', 'Wald (Pessimista)', 'Laplace', 'Hurwicz']
-    lista_cores = list(cores_map.values())
+
     fig_radar = go.Figure()
 
-    for i, acao in enumerate(df_res.index):
+    for acao in df_res.index:
         fig_radar.add_trace(go.Scatterpolar(
             r=[df_res.loc[acao, c] for c in categorias],
             theta=categorias,
             fill='toself',
-            name=acao,
-            line=dict(color=lista_cores[i % len(lista_cores)]) # Define a cor explicitamente
-    ))
+            name=acao
+        ))
 
     fig_radar.update_layout(
         polar=dict(
@@ -135,7 +134,7 @@ if st.session_state.analise_feita:
 
     # Seção do Gráfico de Hurwicz
     st.divider()
-    st.subheader(f"Critério de Hurwicz Dinâmico (α = {alpha})")
+    st.subheader(f"📈 Critério de Hurwicz Dinâmico (α = {alpha})")
     fig_hur = go.Figure()
     fig_hur.add_trace(go.Bar(
         x=df_res.index,
@@ -153,18 +152,13 @@ if st.session_state.analise_feita:
     alphas = np.linspace(0, 1, 100)
     fig_sens = go.Figure()
 
-    for i, acao in enumerate(edited_df.index):
+    for acao in edited_df.index:
         melhor = edited_df.loc[acao].max()
         pior = edited_df.loc[acao].min()
+        # Calculando a reta: y = alpha*max + (1-alpha)*min
         y_vals = [a * melhor + (1 - a) * pior for a in alphas]
         
-        fig_sens.add_trace(go.Scatter(
-            x=alphas, 
-            y=y_vals, 
-            mode='lines', 
-            name=acao,
-            line=dict(width=3, color=lista_cores[i % len(lista_cores)]) # Define a cor aqui
-    ))
+        fig_sens.add_trace(go.Scatter(x=alphas, y=y_vals, mode='lines', name=acao))
 
     fig_sens.update_layout(
         xaxis_title="Coeficiente de Otimismo (α)",
@@ -246,10 +240,8 @@ if st.session_state.analise_feita:
             pdf.set_font("Arial", 'B', 12)
             pdf.cell(190, 10, title, ln=1)
             
-            fig.update_layout(template="plotly_white")
-
             tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
-            fig.write_image(tmp.name, width=1000, height=h, scale=2)
+            fig.write_image(tmp.name, width=1000, height=h)
             temp_imgs.append(tmp.name)
             pdf.image(tmp.name, x=15, w=170)
             pdf.ln(5)
@@ -291,9 +283,9 @@ if st.session_state.analise_feita:
             pdf_bytes = f.read()
             
         st.download_button(
-            label="⬇️ Baixar Relatório (PDF)",
+            label="⬇️ Baixar Relatório do Censo (PDF)",
             data=pdf_bytes,
-            file_name=f"relatorio_decisao_{datetime.now().strftime('%Y%m%d')}.pdf",
+            file_name=f"relatorio_censo_{datetime.now().strftime('%Y%m%d')}.pdf",
             mime="application/pdf",
             key="btn_pdf_final"
         )
